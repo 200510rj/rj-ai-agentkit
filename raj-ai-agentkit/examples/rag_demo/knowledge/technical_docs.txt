@@ -1,0 +1,8 @@
+API Authentication & Endpoints:
+The analytics endpoint is located at `/v2/analytics`.
+All API requests require Bearer token authentication in the HTTP header: `Authorization: Bearer <token>`.
+The global rate limit for the API is 100 requests per minute per IP address.
+
+Database Infrastructure:
+The primary PostgreSQL database server runs on port 5432.
+Database backups are executed automatically every 6 hours and stored in encrypted S3 buckets.

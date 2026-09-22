@@ -1,0 +1,7 @@
+NovaWidget X Specifications:
+The NovaWidget X features a continuous battery life of up to 24 hours on a full charge.
+It supports USB-C fast charging, reaching 80% charge in 30 minutes.
+The device has an IP68 waterproof rating, making it submersible up to 1.5 meters for 30 minutes.
+
+Device Reset Instructions:
+To perform a hard reset on NovaWidget X, press and hold the power button and volume down button simultaneously for 10 seconds until the LED indicator flashes blue.

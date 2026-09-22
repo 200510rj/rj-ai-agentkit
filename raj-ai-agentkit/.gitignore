@@ -1,0 +1,32 @@
+# Python build & distribution artifacts
+dist/
+build/
+*.egg-info/
+*.whl
+*.tar.gz
+
+# Virtual environments
+.venv/
+.venv*/
+venv/
+env/
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment / Secret files
+.env
+*.env
+*.key
+*.pem
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

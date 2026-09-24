@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "raj-ai-agentkit — System Architecture & Component Map",
+    "output": "docs/diagrams/system_architecture.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "decision-flow",
+        "label": "Reliability Decision Layer",
+        "focus": ["guard", "router", "rag_gate", "judge"],
+        "note": "The core reliability primitives controlling safety, intent routing, gating, and evaluation."
+      },
+      {
+        "id": "engine-backends",
+        "label": "Decision Engines & Providers",
+        "focus": ["rule_engine", "llm_engine", "laya_engine", "openai_prov"],
+        "note": "Engine backends providing rule matching, LLM classification, and sub-35ms Laya decisions."
+      },
+      {
+        "id": "app-execution",
+        "label": "Application Execution Layer",
+        "focus": ["retriever", "tools"],
+        "note": "Application-owned layers for knowledge retrieval and deterministic tool execution."
+      }
+    ]
+  },
+  "components": [
+    { "id": "client", "type": "external", "label": "Client App", "sublabel": "User Input Request", "pos": [40, 300], "size": [120, 60] },
+    { "id": "guard", "type": "security", "label": "Guard Primitive", "sublabel": "Safety Filter", "pos": [210, 300], "size": [130, 64], "tag": "Safety Gate" },
+    { "id": "router", "type": "backend", "label": "Router Primitive", "sublabel": "Intent Classifier", "pos": [390, 300], "size": [130, 64], "tag": "Route Selection" },
+    { "id": "rag_gate", "type": "cloud", "label": "RAGGate Primitive", "sublabel": "Retrieval Decision", "pos": [570, 300], "size": [130, 64], "tag": "Gating Gate" },
+    { "id": "judge", "type": "security", "label": "Judge Primitive", "sublabel": "Quality Scorer", "pos": [930, 300], "size": [130, 64], "tag": "Quality Gate" },
+    
+    { "id": "laya_engine", "type": "backend", "label": "LayaEngine", "sublabel": "~33ms Fast Model", "pos": [210, 120], "size": [130, 60] },
+    { "id": "rule_engine", "type": "backend", "label": "RuleEngine", "sublabel": "Offline Keywords", "pos": [390, 120], "size": [130, 60] },
+    { "id": "llm_engine", "type": "backend", "label": "LLMEngine", "sublabel": "Structured LLM", "pos": [570, 120], "size": [130, 60] },
+    { "id": "openai_prov", "type": "cloud", "label": "OpenAIProvider", "sublabel": "Ollama / Cloud", "pos": [750, 120], "size": [130, 60] },
+
+    { "id": "retriever", "type": "database", "label": "EmbeddingRetriever", "sublabel": "Cosine Vector DB", "pos": [570, 480], "size": [130, 60] },
+    { "id": "tools", "type": "messagebus", "label": "Tool Registry", "sublabel": "AST Math Tools", "pos": [750, 480], "size": [130, 60] },
+    { "id": "llm_gen", "type": "cloud", "label": "LLM Synthesis", "sublabel": "Ollama / Cloud LLM", "pos": [750, 300], "size": [130, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "raj-ai-agentkit Core Reliability Package", "wraps": ["guard", "router", "rag_gate", "judge", "rule_engine", "llm_engine", "laya_engine", "openai_prov"] },
+    { "kind": "security-group", "label": "Application Execution Layer", "wraps": ["retriever", "tools", "llm_gen"] }
+  ],
+  "connections": [
+    { "id": "c1", "from": "client", "to": "guard", "label": "Input text", "variant": "emphasis", "labelDy": -24 },
+    { "id": "c2", "from": "guard", "to": "router", "label": "ALLOW", "variant": "security", "labelDy": -24 },
+    { "id": "c3", "from": "router", "to": "rag_gate", "label": "Route key" },
+    { "id": "c4", "from": "rag_gate", "to": "retriever", "label": "RETRIEVE", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "id": "c5", "from": "rag_gate", "to": "llm_gen", "label": "SKIP" },
+    { "id": "c6", "from": "retriever", "to": "llm_gen", "label": "Context", "fromSide": "top", "toSide": "bottom" },
+    { "id": "c7", "from": "tools", "to": "llm_gen", "label": "Tool Output", "fromSide": "top", "toSide": "bottom" },
+    { "id": "c8", "from": "llm_gen", "to": "judge", "label": "Response", "variant": "emphasis", "labelDy": -24 },
+
+    { "id": "e1", "from": "guard", "to": "rule_engine", "label": "evaluate", "fromSide": "top", "toSide": "bottom" },
+    { "id": "e2", "from": "router", "to": "llm_engine", "label": "classify", "fromSide": "top", "toSide": "bottom" },
+    { "id": "e3", "from": "llm_engine", "to": "openai_prov", "label": "structured call", "fromSide": "right", "toSide": "left", "labelDy": -24 }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Decision Layer", "items": ["Guard, Router, RAGGate, and Judge handle reliability", "Zero core library changes required"] },
+    { "dot": "emerald", "title": "Pluggable Engines", "items": ["RuleEngine (fast offline keyword/regex)", "LLMEngine (structured outputs with fallback)", "LayaEngine (~33ms decision model)"] },
+    { "dot": "rose", "title": "Application Boundary", "items": ["Retrieval and Tool Execution belong to application code", "Prevents tight coupling to vector DBs"] }
+  ]
+}

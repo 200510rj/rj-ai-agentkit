@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "raj-ai-agentkit — Embedding RAG Sequence & Signal Trace",
+    "output": "docs/diagrams/embedding_rag_sequence.html",
+    "viewBox": [820, 850],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "gate-and-retrieve",
+        "label": "Gating and Vector Search",
+        "focus": ["user", "guard", "router", "rag_gate", "retriever"],
+        "note": "Guard verifies safety, Router classifies intent, RAGGate triggers semantic retrieval."
+      },
+      {
+        "id": "synthesis-and-score",
+        "label": "Synthesis and Quality Audit",
+        "focus": ["retriever", "ollama", "judge", "user"],
+        "note": "Context is injected into LLM synthesis, then evaluated by Judge before returning."
+      }
+    ]
+  },
+  "participants": [
+    { "id": "user", "type": "external", "label": "User", "sublabel": "client app" },
+    { "id": "guard", "type": "security", "label": "Guard", "sublabel": "safety filter" },
+    { "id": "router", "type": "backend", "label": "Router", "sublabel": "intent router" },
+    { "id": "rag_gate", "type": "cloud", "label": "RAGGate", "sublabel": "decision gate" },
+    { "id": "retriever", "type": "database", "label": "Retriever", "sublabel": "vector store" },
+    { "id": "ollama", "type": "cloud", "label": "Ollama LLM", "sublabel": "local model" },
+    { "id": "judge", "type": "security", "label": "Judge", "sublabel": "quality audit" }
+  ],
+  "segments": [
+    { "from": 150, "to": 360, "label": "Safety & Gating" },
+    { "from": 375, "to": 550, "label": "Retrieval & Generation" },
+    { "from": 565, "to": 750, "label": "Quality Audit & Delivery" }
+  ],
+  "messages": [
+    { "from": "user", "to": "guard", "y": 180, "label": "check(user_query)", "variant": "emphasis" },
+    { "from": "guard", "to": "user", "y": 210, "label": "GuardResult(ALLOW)", "variant": "return" },
+    { "from": "user", "to": "router", "y": 250, "label": "route(user_query)", "variant": "default" },
+    { "from": "router", "to": "user", "y": 280, "label": "RouteResult('company_policy')", "variant": "return" },
+    { "from": "user", "to": "rag_gate", "y": 320, "label": "should_retrieve(user_query)", "variant": "emphasis" },
+    { "from": "rag_gate", "to": "user", "y": 350, "label": "GateResult(RETRIEVE)", "variant": "return" },
+    { "from": "user", "to": "retriever", "y": 400, "label": "retrieve(query, top_k=2)", "variant": "dashed" },
+    { "from": "retriever", "to": "user", "y": 440, "label": "chunks (similarity=0.77)", "variant": "return" },
+    { "from": "user", "to": "ollama", "y": 490, "label": "complete(prompt + context)", "variant": "emphasis" },
+    { "from": "ollama", "to": "user", "y": 530, "label": "grounded_response", "variant": "return" },
+    { "from": "user", "to": "judge", "y": 580, "label": "score(query, response)", "variant": "security" },
+    { "from": "judge", "to": "user", "y": 620, "label": "JudgeResult(PASS, score=1.0)", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "guard", "from": 175, "to": 215, "type": "security" },
+    { "participant": "router", "from": 245, "to": 285, "type": "backend" },
+    { "participant": "rag_gate", "from": 315, "to": 355, "type": "cloud" },
+    { "participant": "retriever", "from": 395, "to": 445, "type": "database" },
+    { "participant": "ollama", "from": 485, "to": 535, "type": "cloud" },
+    { "participant": "judge", "from": 575, "to": 625, "type": "security" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Decoupled Retrieval",
+      "items": [
+        "RAGGate evaluates should_retrieve decision only",
+        "Retriever runs entirely in application code outside agentkit core"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Grounded Evaluation",
+      "items": [
+        "LLM generates grounded output using retrieved vector chunks",
+        "Judge scores compliance and accuracy before final answer delivery"
+      ]
+    }
+  ]
+}

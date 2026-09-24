@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "raj-ai-agentkit — Request State & Lifecycle Machine",
+    "output": "docs/diagrams/request_lifecycle.html",
+    "viewBox": [1030, 630],
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "main-lifecycle", "label": "Main Reliability States", "focus": ["intake", "guarded", "routed", "gated", "completed"], "note": "Main state transitions from intake to final judged output." },
+      { "id": "exceptions", "label": "Security & Error Exits", "focus": ["intake", "guarded", "blocked", "failed"], "note": "Guard rejection halts the request immediately without execution." }
+    ]
+  },
+  "lanes": [
+    { "id": "main", "label": "Main State Machine" },
+    { "id": "waiting", "label": "Gating & Evaluation" },
+    { "id": "terminal", "label": "Terminal Exits" }
+  ],
+  "states": [
+    { "id": "intake", "type": "start", "label": "Intake", "sublabel": "request received", "lane": "main", "col": 0, "step": "01", "tag": "entry" },
+    { "id": "guarded", "type": "active", "label": "Guarded", "sublabel": "safety verified", "lane": "main", "col": 1, "step": "02", "tag": "gate 1" },
+    { "id": "routed", "type": "active", "label": "Routed", "sublabel": "intent classified", "lane": "main", "col": 2, "step": "03", "tag": "route" },
+    { "id": "gated", "type": "decision", "label": "Gated", "sublabel": "retrieval evaluated", "lane": "main", "col": 3, "step": "04", "tag": "gate 2" },
+    { "id": "completed", "type": "success", "label": "Completed", "sublabel": "final response", "lane": "main", "col": 4, "step": "05", "tag": "done" },
+    { "id": "blocked", "type": "failure", "label": "Blocked", "sublabel": "safety violation", "lane": "terminal", "col": 1, "tag": "terminal" },
+    { "id": "failed", "type": "failure", "label": "Failed", "sublabel": "judge score < 0.6", "lane": "terminal", "col": 2, "tag": "terminal" }
+  ],
+  "transitions": [
+    { "id": "intake-guard", "from": "intake", "to": "guarded", "variant": "emphasis" },
+    { "id": "guard-block", "from": "guarded", "to": "blocked", "variant": "security", "fromSide": "bottom", "toSide": "top" },
+    { "id": "guard-route", "from": "guarded", "to": "routed", "variant": "emphasis" },
+    { "id": "route-gate", "from": "routed", "to": "gated", "variant": "default" },
+    { "id": "gate-complete", "from": "gated", "to": "completed", "variant": "emphasis" },
+    { "id": "judge-fail", "from": "completed", "to": "failed", "variant": "security", "fromSide": "bottom", "toSide": "top" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "State Progression",
+      "items": [
+        "Every request passes through strict state verification",
+        "Guard Block is a terminal exit with zero side-effects"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Terminal States",
+      "items": [
+        "Blocked and Failed states provide structured failure outputs",
+        "Completed state guarantees Judge threshold score >= 0.6"
+      ]
+    }
+  ]
+}

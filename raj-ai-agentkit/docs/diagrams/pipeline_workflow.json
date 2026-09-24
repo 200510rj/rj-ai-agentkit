@@ -1,0 +1,81 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "raj-ai-agentkit — Request Execution Workflow",
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "full-flow",
+        "label": "Full Request Pipeline",
+        "focus": ["user", "guard", "router", "rag_gate", "retriever", "llm", "judge", "final"],
+        "note": "Follow the complete end-to-end request from Guard check to Judge approval."
+      },
+      {
+        "id": "safety-block",
+        "label": "Guard Safety Stop",
+        "focus": ["user", "guard", "blocked"],
+        "note": "See where prompt injection and policy violations are halted."
+      }
+    ],
+    "output": "docs/diagrams/pipeline_workflow.html"
+  },
+  "lanes": [
+    { "id": "client", "label": "Client Layer" },
+    { "id": "reliability", "label": "agentkit Reliability Primitives" },
+    { "id": "policy", "label": "Safety & Recovery", "variant": "exception" },
+    { "id": "execution", "label": "Application Execution" }
+  ],
+  "phases": [
+    { "id": "intake", "label": "Safety & Route", "fromCol": 0, "toCol": 1 },
+    { "id": "decision", "label": "RAG Gate & Retrieval", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "synthesis", "label": "LLM & Quality Score", "fromCol": 4, "toCol": 5 }
+  ],
+  "groups": [
+    { "id": "agentkit_loop", "label": "Reliability Loop", "lane": "reliability", "fromCol": 1, "toCol": 5, "variant": "emphasis" },
+    { "id": "safety_halt", "label": "Safety Stop", "lane": "policy", "fromCol": 1, "toCol": 2, "variant": "security" }
+  ],
+  "mainPath": ["user", "guard", "router", "rag_gate", "retriever", "llm", "judge", "final"],
+  "nodes": [
+    { "id": "user", "lane": "client", "col": 0, "type": "external", "label": "User Query", "sublabel": "Input request", "width": 130 },
+    { "id": "guard", "lane": "reliability", "col": 1, "type": "security", "label": "Guard Check", "sublabel": "Safety filter", "tag": "Gate 1", "width": 130 },
+    { "id": "blocked", "lane": "policy", "col": 1, "type": "security", "label": "Pipeline Halted", "sublabel": "verdict = block", "width": 130 },
+    { "id": "router", "lane": "reliability", "col": 2, "type": "backend", "label": "Router Intent", "sublabel": "Classify route", "width": 130 },
+    { "id": "rag_gate", "lane": "reliability", "col": 3, "type": "cloud", "label": "RAGGate Gating", "sublabel": "should_retrieve?", "tag": "Gate 2", "width": 130 },
+    { "id": "retriever", "lane": "execution", "col": 3, "type": "database", "label": "EmbeddingRetriever", "sublabel": "Cosine vector match", "width": 130 },
+    { "id": "llm", "lane": "execution", "col": 4, "type": "cloud", "label": "LLM Synthesis", "sublabel": "Ollama / OpenAI", "width": 130 },
+    { "id": "judge", "lane": "reliability", "col": 5, "type": "security", "label": "Judge Score", "sublabel": "pass / fail verdict", "tag": "Gate 3", "width": 130 },
+    { "id": "final", "lane": "client", "col": 5, "type": "frontend", "label": "Final Answer", "sublabel": "Grounded response", "width": 130 }
+  ],
+  "edges": [
+    { "id": "e_user_guard", "from": "user", "to": "guard", "variant": "emphasis" },
+    { "id": "e_guard_block", "from": "guard", "to": "blocked", "label": "block", "variant": "security", "role": "error" },
+    { "id": "e_guard_allow", "from": "guard", "to": "router", "label": "allow", "variant": "emphasis" },
+    { "id": "e_router_gate", "from": "router", "to": "rag_gate", "variant": "default" },
+    { "id": "e_gate_retrieve", "from": "rag_gate", "to": "retriever", "label": "retrieve", "variant": "dashed" },
+    { "id": "e_retriever_llm", "from": "retriever", "to": "llm", "label": "context", "variant": "dashed" },
+    { "id": "e_gate_skip", "from": "rag_gate", "to": "llm", "label": "skip", "variant": "default" },
+    { "id": "e_llm_judge", "from": "llm", "to": "judge", "variant": "emphasis" },
+    { "id": "e_judge_final", "from": "judge", "to": "final", "label": "pass", "variant": "emphasis" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Reliability Sequence",
+      "items": [
+        "Guard filters unsafe input before routing",
+        "RAGGate controls expensive vector search",
+        "Judge scores final response quality"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Strict Isolation",
+      "items": [
+        "Guard BLOCK stops all downstream computation",
+        "Retrieval and LLM execution reside in application layer"
+      ]
+    }
+  ]
+}
